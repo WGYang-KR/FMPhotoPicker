@@ -25,7 +25,7 @@ public class FMPhotoPickerViewController: UIViewController {
     private weak var imageCollectionView: UICollectionView!
     private weak var numberOfSelectedPhotoContainer: UIView!
     private weak var numberOfSelectedPhoto: UILabel!
-    private weak var doneButton: UIButton!
+    private weak var selectModeButton: UIButton!
     private weak var cancelButton: UIButton!
     
     // MARK: - Public
@@ -40,6 +40,17 @@ public class FMPhotoPickerViewController: UIViewController {
 
     private let config: FMPhotoPickerConfig
     
+    ///선택모드인지 여부
+    var selectMode: Bool = false {
+        didSet {
+
+            self.selectModeButton.setTitle(oldValue ? "Select" : "Cancel" , for: .normal)
+            self.dataSource.unsetAllSelectedForPhoto()
+            updateControlBar()
+            self.imageCollectionView.reloadData()
+        }
+    }
+    
     // The controller for multiple select/deselect
     private lazy var batchSelector: FMPhotoPickerBatchSelector = {
         return FMPhotoPickerBatchSelector(viewController: self, collectionView: self.imageCollectionView, dataSource: self.dataSource)
@@ -47,7 +58,7 @@ public class FMPhotoPickerViewController: UIViewController {
     
     private var dataSource: FMPhotosDataSource! {
         didSet {
-            if self.config.selectMode == .multiple {
+            if self.selectMode {
                 // Enable batchSelector in multiple selection mode only
                 self.batchSelector.enable()
             }
@@ -86,13 +97,12 @@ public class FMPhotoPickerViewController: UIViewController {
         self.imageCollectionView.delegate = self
         
         self.numberOfSelectedPhotoContainer.isHidden = true
-        self.doneButton.isHidden = true
         
         // set button title
         self.cancelButton.setTitle(config.strings["picker_button_cancel"], for: .normal)
         self.cancelButton.titleLabel!.font = UIFont.boldSystemFont(ofSize: config.titleFontSize)
-        self.doneButton.setTitle(config.strings["picker_button_select_done"], for: .normal)
-        self.doneButton.titleLabel!.font = UIFont.boldSystemFont(ofSize: config.titleFontSize)
+        self.selectModeButton.setTitle("Select", for: .normal)
+        self.selectModeButton.titleLabel!.font = UIFont.boldSystemFont(ofSize: config.titleFontSize)
     }
     
     @objc private func onTapCancel(_ sender: Any) {
@@ -101,6 +111,10 @@ public class FMPhotoPickerViewController: UIViewController {
     
     @objc private func onTapDone(_ sender: Any) {
         processDetermination()
+    }
+    
+    @objc private func onTapSelectMode(_ sender: Any) {
+        self.selectMode = !self.selectMode
     }
     
     // MARK: - Logic
@@ -148,13 +162,11 @@ public class FMPhotoPickerViewController: UIViewController {
     
     public func updateControlBar() {
         if self.dataSource.numberOfSelectedPhoto() > 0 {
-            self.doneButton.isHidden = false
-            if self.config.selectMode == .multiple {
+            if self.selectMode {
                 self.numberOfSelectedPhotoContainer.isHidden = false
                 self.numberOfSelectedPhoto.text = "\(self.dataSource.numberOfSelectedPhoto())"
             }
         } else {
-            self.doneButton.isHidden = true
             self.numberOfSelectedPhotoContainer.isHidden = true
         }
     }
@@ -207,7 +219,7 @@ extension FMPhotoPickerViewController: UICollectionViewDataSource {
         }
         
         cell.loadView(photoAsset: photoAsset,
-                      selectMode: self.config.selectMode,
+                      selectMode: self.selectMode,
                       selectedIndex: self.dataSource.selectedIndexOfPhoto(atIndex: indexPath.item))
         cell.onTapSelect = { [unowned self, unowned cell] in
             if let selectedIndex = self.dataSource.selectedIndexOfPhoto(atIndex: indexPath.item) {
@@ -241,7 +253,7 @@ extension FMPhotoPickerViewController: UICollectionViewDataSource {
      the photo will be added to selected list. Otherwise, a warning dialog will be displayed and NOTHING will be added.
      */
     public func tryToAddPhotoToSelectedList(photoIndex index: Int) {
-        if self.config.selectMode == .multiple {
+        if selectMode {
             guard let fmMediaType = self.dataSource.mediaTypeForPhoto(atIndex: index) else { return }
 
             var canBeAdded = true
@@ -413,17 +425,17 @@ private extension FMPhotoPickerViewController {
             cancelButton.centerYAnchor.constraint(equalTo: menuContainer.centerYAnchor),
         ])
         
-        let doneButton = UIButton(type: .system)
-        self.doneButton = doneButton
-        doneButton.setTitleColor(kBlackColor, for: .normal)
-        doneButton.addTarget(self, action: #selector(onTapDone(_:)), for: .touchUpInside)
+        let selectModeButton = UIButton(type: .system)
+        self.selectModeButton = selectModeButton
+        selectModeButton.setTitleColor(kBlackColor, for: .normal)
+        selectModeButton.addTarget(self, action: #selector(onTapSelectMode(_:)), for: .touchUpInside)
         
-        doneButton.translatesAutoresizingMaskIntoConstraints = false
-        menuContainer.addSubview(doneButton)
+        selectModeButton.translatesAutoresizingMaskIntoConstraints = false
+        menuContainer.addSubview(selectModeButton)
         NSLayoutConstraint.activate([
-            doneButton.rightAnchor.constraint(equalTo: menuContainer.rightAnchor, constant: -16),
-            doneButton.centerYAnchor.constraint(equalTo: menuContainer.centerYAnchor),
-            doneButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 40),
+            selectModeButton.rightAnchor.constraint(equalTo: menuContainer.rightAnchor, constant: -16),
+            selectModeButton.centerYAnchor.constraint(equalTo: menuContainer.centerYAnchor),
+            selectModeButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 40),
         ])
         
         let numberOfSelectedPhotoContainer = UIView()
@@ -435,7 +447,7 @@ private extension FMPhotoPickerViewController {
         numberOfSelectedPhotoContainer.translatesAutoresizingMaskIntoConstraints = false
         menuContainer.addSubview(numberOfSelectedPhotoContainer)
         NSLayoutConstraint.activate([
-            numberOfSelectedPhotoContainer.rightAnchor.constraint(equalTo: doneButton.leftAnchor, constant: -16),
+            numberOfSelectedPhotoContainer.rightAnchor.constraint(equalTo: selectModeButton.leftAnchor, constant: -16),
             numberOfSelectedPhotoContainer.centerYAnchor.constraint(equalTo: menuContainer.centerYAnchor),
             numberOfSelectedPhotoContainer.heightAnchor.constraint(equalToConstant: 28),
             numberOfSelectedPhotoContainer.widthAnchor.constraint(equalToConstant: 28),

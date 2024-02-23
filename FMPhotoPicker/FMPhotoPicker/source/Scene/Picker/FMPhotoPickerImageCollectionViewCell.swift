@@ -27,7 +27,7 @@ class FMPhotoPickerImageCollectionViewCell: UICollectionViewCell {
     
     public var onTapSelect = {}
     
-    private var selectMode: FMSelectMode!
+    private var selectMode: Bool!
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -157,13 +157,17 @@ class FMPhotoPickerImageCollectionViewCell: UICollectionViewCell {
         self.photoAsset?.cancelAllRequest()
     }
     
-    public func loadView(photoAsset: FMPhotoAsset, selectMode: FMSelectMode, selectedIndex: Int?) {
+    public func loadView(photoAsset: FMPhotoAsset, selectMode: Bool, selectedIndex: Int?) {
         self.selectMode = selectMode
         
-        if selectMode == .single {
+        if !selectMode {
             self.selectedIndex.isHidden = true
             self.selectButton.isHidden = true
             self.editedMarkImageViewTopConstraint?.constant = 10
+        } else {
+            self.selectedIndex.isHidden = false
+            self.selectButton.isHidden = false
+            self.editedMarkImageViewTopConstraint?.constant = 35
         }
         
         self.photoAsset = photoAsset
@@ -193,7 +197,7 @@ class FMPhotoPickerImageCollectionViewCell: UICollectionViewCell {
     
     func performSelectionAnimation(selectedIndex: Int?) {
         if let selectedIndex = selectedIndex {
-            if self.selectMode == .multiple {
+            if self.selectMode {
                 self.selectedIndex.isHidden = false
                 self.selectedIndex.text = "\(selectedIndex + 1)"
                 self.selectButton.setImage(UIImage(named: "check_on", in: .current, compatibleWith: nil), for: .normal)

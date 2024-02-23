@@ -30,6 +30,10 @@ class FMPhotosDataSource {
         }
     }
     
+    public func unsetAllSelectedForPhoto() {
+        self.selectedPhotoIndexes.removeAll()
+    }
+    
     public func selectedIndexOfPhoto(atIndex index: Int) -> Int? {
         return self.selectedPhotoIndexes.firstIndex(where: { $0 == index })
     }
