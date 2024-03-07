@@ -27,6 +27,7 @@ public class FMPhotoPickerViewController: UIViewController {
     private weak var numberOfSelectedPhoto: UILabel!
     private weak var selectModeButton: UIButton!
     private weak var cancelButton: UIButton!
+    private weak var toolbar: FMPhotoPickerToolbar!
     
     // MARK: - Public
     public weak var delegate: FMPhotoPickerViewControllerDelegate? = nil
@@ -47,6 +48,7 @@ public class FMPhotoPickerViewController: UIViewController {
             self.selectModeButton.setTitle(oldValue ? "Select" : "Cancel" , for: .normal)
             self.dataSource.unsetAllSelectedForPhoto()
             updateControlBar()
+            updateToolBar(shows: !oldValue)
             self.imageCollectionView.reloadData()
         }
     }
@@ -103,6 +105,7 @@ public class FMPhotoPickerViewController: UIViewController {
         self.cancelButton.titleLabel!.font = UIFont.boldSystemFont(ofSize: config.titleFontSize)
         self.selectModeButton.setTitle("Select", for: .normal)
         self.selectModeButton.titleLabel!.font = UIFont.boldSystemFont(ofSize: config.titleFontSize)
+        updateToolBar(shows: false)
     }
     
     @objc private func onTapCancel(_ sender: Any) {
@@ -115,6 +118,11 @@ public class FMPhotoPickerViewController: UIViewController {
     
     @objc private func onTapSelectMode(_ sender: Any) {
         self.selectMode = !self.selectMode
+    }
+    
+    /// 하단 툴바 on/off
+    private func updateToolBar(shows: Bool) {
+            self.toolbar.isHidden = !shows
     }
     
     // MARK: - Logic
@@ -200,6 +208,14 @@ public class FMPhotoPickerViewController: UIViewController {
                 self.delegate?.fmPhotoPickerController(self, didFinishPickingPhotoWith: result)
             }
         }
+    }
+    
+    private func deletePhotos() {
+        
+    }
+    
+    private func sharePhotos() {
+        
     }
 }
 
@@ -372,24 +388,12 @@ private extension FMPhotoPickerViewController {
     func initializeViews() {
         let headerView = UIView()
         headerView.backgroundColor = .white
-        
         headerView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(headerView)
-        NSLayoutConstraint.activate([
-            headerView.topAnchor.constraint(equalTo: view.topAnchor),
-            headerView.leftAnchor.constraint(equalTo: view.leftAnchor),
-            headerView.rightAnchor.constraint(equalTo: view.rightAnchor),
-        ])
         
         let headerSeparator = UIView()
         headerSeparator.backgroundColor = kBorderColor
-        
         headerSeparator.translatesAutoresizingMaskIntoConstraints = false
-        headerView.addSubview(headerSeparator)
         NSLayoutConstraint.activate([
-            headerSeparator.leftAnchor.constraint(equalTo: headerView.leftAnchor),
-            headerSeparator.rightAnchor.constraint(equalTo: headerView.rightAnchor),
-            headerSeparator.bottomAnchor.constraint(equalTo: headerView.bottomAnchor),
             headerSeparator.heightAnchor.constraint(equalToConstant: 1),
         ])
         
@@ -397,16 +401,8 @@ private extension FMPhotoPickerViewController {
         
         menuContainer.translatesAutoresizingMaskIntoConstraints = false
         headerView.addSubview(menuContainer)
-        if #available(iOS 11.0, *) {
-            NSLayoutConstraint.activate([
-                menuContainer.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            ])
-        } else {
-            NSLayoutConstraint.activate([
-                menuContainer.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 20),
-            ])
-        }
         NSLayoutConstraint.activate([
+            menuContainer.topAnchor.constraint(equalTo: headerView.topAnchor),
             menuContainer.leftAnchor.constraint(equalTo: headerView.leftAnchor),
             menuContainer.rightAnchor.constraint(equalTo: headerView.rightAnchor),
             menuContainer.bottomAnchor.constraint(equalTo: headerView.bottomAnchor),
@@ -471,14 +467,27 @@ private extension FMPhotoPickerViewController {
         let imageCollectionView = UICollectionView(frame: .zero, collectionViewLayout: FMPhotoPickerImageCollectionViewLayout())
         self.imageCollectionView = imageCollectionView
         imageCollectionView.backgroundColor = .clear
-        
         imageCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(imageCollectionView)
+      
+        
+        let toolbar = FMPhotoPickerToolbar(deleteBtnAction: { [weak self] in
+            self?.deletePhotos()
+        }, shareBtnAction: { [weak self] in
+            self?.sharePhotos()
+        } )
+        self.toolbar = toolbar
+        
+        
+        let containerStackView: UIStackView = UIStackView(arrangedSubviews: [headerView,headerSeparator,imageCollectionView,toolbar])
+        containerStackView.axis = .vertical
+        containerStackView.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(containerStackView)
         NSLayoutConstraint.activate([
-            imageCollectionView.topAnchor.constraint(equalTo: menuContainer.bottomAnchor),
-            imageCollectionView.rightAnchor.constraint(equalTo: view.rightAnchor),
-            imageCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            imageCollectionView.leftAnchor.constraint(equalTo: view.leftAnchor),
+            containerStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            containerStackView.rightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.rightAnchor),
+            containerStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            containerStackView.leftAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leftAnchor),
         ])
+
     }
 }
