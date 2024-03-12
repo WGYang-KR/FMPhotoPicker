@@ -475,6 +475,7 @@ private extension FMPhotoPickerViewController {
         }, shareBtnAction: { [weak self] in
             self?.sharePhotos()
         } )
+        toolbar.translatesAutoresizingMaskIntoConstraints = false
         self.toolbar = toolbar
         
         

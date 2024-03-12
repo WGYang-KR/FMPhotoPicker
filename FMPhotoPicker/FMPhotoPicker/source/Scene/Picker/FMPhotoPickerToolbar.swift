@@ -12,13 +12,14 @@ class FMPhotoPickerToolbar: UIToolbar {
     lazy var deleteBtn: UIBarButtonItem = {
         return UIBarButtonItem(barButtonSystemItem: .trash,
                                target: self,
-                               action: nil)
+                               action: #selector(didTapDeleteBtn))
     }()
     
     lazy var shareBtn: UIBarButtonItem = {
         return UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.up"),
                                style: .plain,
-                               target: self, action: nil)
+                               target: self, 
+                               action: #selector(didTapShareBtn))
     }()
     
     var deleteBtnAction: (() -> Void)?
@@ -35,7 +36,7 @@ class FMPhotoPickerToolbar: UIToolbar {
     }
     
     private init() {
-        super.init(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 100))
+        super.init(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 30))
     }
     
     required init?(coder: NSCoder) {
@@ -44,11 +45,14 @@ class FMPhotoPickerToolbar: UIToolbar {
 
     
     func initView() {
+        barStyle = .default
         let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         
         let barItems = [deleteBtn, flexibleSpace, shareBtn]
+        
         setItems(barItems, animated: false)
         updateConstraintsIfNeeded()
+        sizeToFit()
     }
     
     @objc func didTapDeleteBtn() {
