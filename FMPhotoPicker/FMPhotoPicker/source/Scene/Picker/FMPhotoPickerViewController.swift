@@ -21,6 +21,9 @@ public protocol FMPhotoPickerViewControllerDelegate: AnyObject {
 public extension FMPhotoPickerViewControllerDelegate {
     func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didFinishPickingPhotoWith photos: [UIImage]) {}
     func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didFinishPickingPhotoWith assets: [PHAsset]) {}
+    
+    func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didTapDeleteBtnPhotoWith assets: [PHAsset]) {}
+    func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didTapShareBtnPhotoWith assets: [PHAsset]) { }
 }
 
 public class FMPhotoPickerViewController: UIViewController {
@@ -43,6 +46,8 @@ public class FMPhotoPickerViewController: UIViewController {
     private var presentedPhotoIndex: Int?
 
     private let config: FMPhotoPickerConfig
+    
+    private let assetCollection: PHAssetCollection?
     
     ///선택모드인지 여부
     var selectMode: Bool = false {
@@ -71,8 +76,11 @@ public class FMPhotoPickerViewController: UIViewController {
     }
     
     // MARK: - Init
-    public init(config: FMPhotoPickerConfig) {
-        self.config = config
+    /// PhotoViewer를 Init한다.
+    /// - Parameter assetCollection: 표시할 앨범의 PHAssetCollection. nil이면 모든 사진을 표시한다.
+    public init(assetCollection: PHAssetCollection?) {
+        self.config = .init()
+        self.assetCollection = assetCollection
         super.init(nibName: nil, bundle: nil)
         modalPresentationStyle = .fullScreen
     }
@@ -155,7 +163,7 @@ public class FMPhotoPickerViewController: UIViewController {
     }
     
     private func fetchPhotos() {
-        let photoAssets = Helper.getAssets(allowMediaTypes: self.config.mediaTypes)
+        let photoAssets = Helper.getAssets(allowMediaTypes: self.config.mediaTypes, phAssetCollection: self.assetCollection)
         var forceCropType: FMCroppable? = nil
         if config.forceCropEnabled, let firstCrop = config.availableCrops?.first {
             forceCropType = firstCrop

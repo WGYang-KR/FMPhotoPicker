@@ -158,6 +158,39 @@ class Helper: NSObject {
         return photoAssets
     }
     
+    /// 앨범의 사진 Asset을 가져온다
+    /// - Parameters:
+    ///   - allowMediaTypes: 불러올 미디어 타입 목록
+    ///   - phAssetCollection: 불러올 앨범. nil 이면 모든 사진 불러옴
+    /// - Returns: [PHAsset]
+    static func getAssets(allowMediaTypes: [FMMediaType], phAssetCollection: PHAssetCollection? ) -> [PHAsset] {
+        let fetchOptions = PHFetchOptions()
+        fetchOptions.includeAssetSourceTypes = [.typeUserLibrary, .typeCloudShared, .typeiTunesSynced]
+        
+        // Default sort is modificationDate
+        // fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: true)]
+        
+        fetchOptions.predicate = NSPredicate(format: "mediaType IN %@", allowMediaTypes.map( { $0.value() }))
+        
+        var fetchResult: PHFetchResult<PHAsset>? = nil
+        if let phAssetCollection {
+            fetchResult = PHAsset.fetchAssets(in: phAssetCollection, options: fetchOptions)
+        } else {
+            fetchResult = PHAsset.fetchAssets(with: fetchOptions)
+        }
+        
+        guard let fetchResult, fetchResult.count > 0 else { return [] }
+        
+        var photoAssets = [PHAsset]()
+        fetchResult.enumerateObjects() { asset, index, _ in
+            photoAssets.append(asset)
+        }
+        
+        return photoAssets
+    }
+    
+    
+    
     static func canAccessPhotoLib() -> Bool {
         return PHPhotoLibrary.authorizationStatus() == .authorized
     }

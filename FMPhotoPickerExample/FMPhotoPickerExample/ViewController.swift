@@ -10,6 +10,7 @@ import UIKit
 import FMPhotoPicker
 
 class ViewController: UIViewController, FMPhotoPickerViewControllerDelegate, FMImageEditorViewControllerDelegate {
+    
     func fmImageEditorViewController(_ editor: FMImageEditorViewController, didFinishEdittingPhotoWith photo: UIImage) {
         self.dismiss(animated: true, completion: nil)
         previewImageView.image = photo
@@ -107,7 +108,7 @@ class ViewController: UIViewController, FMPhotoPickerViewControllerDelegate, FMI
     }
     
     @IBAction func open(_ sender: Any) {
-        let vc = FMPhotoPickerViewController(config: config())
+        let vc = FMPhotoPickerViewController(assetCollection: nil)
         vc.delegate = self
         self.present(vc, animated: true)
     }
