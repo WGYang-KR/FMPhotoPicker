@@ -10,9 +10,12 @@ import UIKit
 import Photos
 
 // MARK: - Delegate protocol
-public protocol FMPhotoPickerViewControllerDelegate: class {
+public protocol FMPhotoPickerViewControllerDelegate: AnyObject {
     func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didFinishPickingPhotoWith photos: [UIImage])
     func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didFinishPickingPhotoWith assets: [PHAsset])
+    
+    func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didTapDeleteBtnPhotoWith assets: [PHAsset])
+    func fmPhotoPickerController(_ picker: FMPhotoPickerViewController, didTapShareBtnPhotoWith assets: [PHAsset])
 }
 
 public extension FMPhotoPickerViewControllerDelegate {
@@ -211,11 +214,15 @@ public class FMPhotoPickerViewController: UIViewController {
     }
     
     private func deletePhotos() {
-        
+        let assets = dataSource.getSelectedPhotos().compactMap { $0.asset }
+        delegate?.fmPhotoPickerController(self, didTapDeleteBtnPhotoWith: assets)
+        return
     }
     
     private func sharePhotos() {
-        
+        let assets = dataSource.getSelectedPhotos().compactMap { $0.asset }
+        delegate?.fmPhotoPickerController(self, didTapShareBtnPhotoWith: assets)
+        return
     }
 }
 
