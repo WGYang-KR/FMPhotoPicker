@@ -7,7 +7,7 @@ Pod::Spec.new do |s|
   s.homepage      = "https://github.com/congnd/FMPhotoPicker"
   s.license       = { :type => 'MIT', :file => 'LICENSE' }
   s.author        = { "Cong Nguyen" => "congnd@outlook.com" }
-  s.ios.deployment_target   = '9.0'
+  s.ios.deployment_target   = '13.0'
   s.source        = { :git => "https://github.com/congnd/FMPhotoPicker.git", :tag => s.version }
   s.source_files  = 'Classes', 'FMPhotoPicker/FMPhotoPicker/source/**/*.swift'
   s.resources     = ['FMPhotoPicker/FMPhotoPicker/source/Assets.xcassets', 'FMPhotoPicker/FMPhotoPicker/source/**/*.xib']
